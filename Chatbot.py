@@ -16,6 +16,7 @@ class ChatbotLogic:
 
         # Lista de URLs dos artigos
         urls = [
+            "https://gauchazh.clicrbs.com.br/destemperados/tendencias/noticia/2021/07/pizza-e-realmente-de-origem-italiana-descubra-a-verdadeira-historia-sobre-a-origem-do-classico-ckqvavi15006j013brqvi7pcf.html",
             "https://redeglobo.globo.com/redebahia/noticia/historia-da-pizza-descubra-como-surgiu-o-prato-que-e-tao-popular-entre-os-brasileiros.ghtml",
             "https://pt.wikipedia.org/wiki/Pizza",
             "https://gastronomiaitaliana.com.br/a-historia-da-pizza/",
@@ -36,9 +37,10 @@ class ChatbotLogic:
     #faz o preprocessing do artigo que foi recebido
     def preprocessing(self, sentence):
         sentence = sentence.lower()
-        tokens = [token.text for token in self.nlp(sentence) if not (token.is_stop or token.like_num
-                                                                or token.is_punct or token.is_space
-                                                                or len(token) == 1)]
+        
+        #usando lematização ao invés de token.text
+        tokens = [token.lemma_ for token in self.nlp(sentence) if not (token.is_stop or token.like_num or token.is_punct or token.is_space or len(token) == 1)]
+
         return ' '.join(tokens)
     
     #cria a nuvem de palavras com o texto já limpo pelo preprocessing
@@ -52,7 +54,7 @@ class ChatbotLogic:
 
     #função onde o bot responde a pergunta do usuário.
     #se a similaridade for < 0.20, o bot não é capaz de responder.
-    def answer(self, user_text, threshold=0.20):
+    def answer(self, user_text, threshold=0.15):
         cleaned_sentences = [self.preprocessing(sentence) for sentence in self.original_sentences]
         user_text = self.preprocessing(user_text)
         cleaned_sentences.append(user_text)
@@ -65,11 +67,13 @@ class ChatbotLogic:
 
         chatbot_answer = ''
 
-        user_messages_possibilities = ['oi', 'ola']
+        user_messages_possibilities = ['oi', 'ola', 'olá']
 
         if user_text.lower() in user_messages_possibilities:
             chatbot_answer += "Oi! Qual sua pergunta?"
 
+        elif user_text == "":
+             chatbot_answer += "Digite uma pergunta para que eu possa respondê-la."
         elif similarity[0][sentence_index] < threshold:
             chatbot_answer += "Desculpe, ainda não consigo responder isso. Tente outra pergunta!"
         else:
