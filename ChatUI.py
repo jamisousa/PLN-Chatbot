@@ -1,5 +1,6 @@
 import tkinter as tk
 from Chatbot import ChatbotLogic
+from PIL import Image, ImageTk
 
 class ChatbotUi:
     def __init__(self, chatbot_logic):
@@ -28,31 +29,40 @@ class ChatbotUi:
 
         #Botão de enviar
         self.sendbutton = tk.Button(self.input_frame, text="Enviar", command=self.send_message, foreground="black", justify="right", background="#c5c6d6",  font=("Poppins", 14))
-        self.sendbutton.grid(row=0, column=2)  # Botão "Enviar"
+        self.sendbutton.grid(row=0, column=2)  
 
+        # Imagens para o bot e o usuário
+        self.bot_icon = ImageTk.PhotoImage(Image.open("./img/bot.png"))
+        self.user_icon = ImageTk.PhotoImage(Image.open("./img/user.png"))
+    
         #Mensagens iniciais do bot de boas vindas & mostra a nuvem de palavras
-        self.show_message("> Olá! Faça qualquer pergunta sobre pizza e eu tentarei responder.", tag="chatbot_tag")
-        self.show_message("> Você pode consultar a nuvem de palavras gerada para ter uma ideia do que pode me perguntar.", tag="chatbot_tag")
-        self.show_message("> Se quiser parar, é só digitar 'sair'!", tag="chatbot_tag")
+        self.show_message("Olá! Faça qualquer pergunta sobre pizza e eu tentarei responder.", tag="chatbot_tag")
+        self.show_message("Você pode consultar a nuvem de palavras gerada para saber o que perguntar.", tag="chatbot_tag")
+        self.show_message("Se quiser parar, é só digitar 'sair'!", tag="chatbot_tag")
         self.chatbot_logic.createWordCloud()
 
     #Tkinter pega a mensagem do usuário e chama o answer do chatbot
     def send_message(self):
         user_message = self.userEntry.get()
         chatbot_answer = self.chatbot_logic.answer(user_message)
+        
         if user_message.lower() == 'sair':
             self.show_message("Você: " + user_message, "user_tag")
             self.userEntry.delete(0, tk.END)
             self.window.destroy()
         else:
             self.show_message(user_message, "user_tag")
-            self.show_message("", "user_tag") 
-            self.show_message("> " + chatbot_answer, "chatbot_tag")
+            self.show_message(chatbot_answer, "chatbot_tag")
             self.userEntry.delete(0, tk.END)
 
     def show_message(self, message, tag=None):
+        if tag == "user_tag":
+            self.messageswindow.image_create(tk.END, image=self.user_icon)
+        elif tag == "chatbot_tag":
+            self.messageswindow.image_create(tk.END, image=self.bot_icon)
+    
         self.messageswindow.config(state=tk.NORMAL)
-        self.messageswindow.insert(tk.END, message + "\n", tag)
+        self.messageswindow.insert(tk.END, " " + message + "\n", tag)
         self.messageswindow.config(state=tk.DISABLED)
 
     def iniciar(self):
